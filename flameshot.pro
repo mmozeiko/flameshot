@@ -216,6 +216,30 @@ HEADERS  += src/widgets/capture/buttonhandler.h \
     src/widgets/panel/sidepanelwidget.h
 
 unix:!macx {
+
+    WAYLAND_CLIENT = $$system(pkg-config --path wayland-client)
+    WAYLAND_PROTOCOLS = $$system(pkg-config --path wayland-protocols)
+
+    isEmpty(WAYLAND_CLIENT) || isEmpty(WAYLAND_PROTOCOLS) {
+        message("wayland-client or wayland-protocols package not found")
+    } else {
+        message(Enabling extra wayland protocols)
+
+        CONFIG += link_pkgconfig
+        PKGCONFIG += wayland-client wayland-protocols
+
+        WAYLAND_PROTOS = \
+            src/utils/wayland_protocols/wlr-screencopy-unstable-v1.xml \
+            $$system(pkg-config --variable=pkgdatadir wayland-protocols)/unstable/xdg-output/xdg-output-unstable-v1.xml
+        include(wayland_proto.pri)
+
+        DEFINES += ENABLE_WAYLAND_PROTOCOLS
+
+        QMAKE_LIBS_THREAD = -lrt
+        SOURCES += src/utils/waylandprotocols.cpp
+        HEADERS += src/utils/waylandprotocols.h
+    }
+
     SOURCES += src/core/flameshotdbusadapter.cpp \
         src/utils/dbusutils.cpp
 

@@ -18,6 +18,9 @@
 #include "screengrabber.h"
 #include "src/utils/filenamehandler.h"
 #include "src/utils/systemnotification.h"
+#if defined(ENABLE_WAYLAND_PROTOCOLS)
+#include "src/utils/waylandprotocols.h"
+#endif
 #include <QPixmap>
 #include <QScreen>
 #include <QGuiApplication>
@@ -69,7 +72,12 @@ QPixmap ScreenGrabber::grabEntireDesktop(bool &ok) {
             }
             break;
         } default:
+#if defined(ENABLE_WAYLAND_PROTOCOLS)
+            res = WaylandProtocols::CaptureWithScreencopy();
+            ok = !res.isNull();
+#else
             ok = false;
+#endif
             break;
         }
         if (!ok) {
